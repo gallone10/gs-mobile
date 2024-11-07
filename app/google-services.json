@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "668356219393",
+    "project_id": "gs-mobile-d00bc",
+    "storage_bucket": "gs-mobile-d00bc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:668356219393:android:30360d835204743ae36600",
+        "android_client_info": {
+          "package_name": "com.example.gs_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvNeen8WJekw7la9GDY5El5sl63Y1YkA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
