@@ -28,6 +28,7 @@
         <activity android:name=".InsertDataActivity" android:exported="true" />
         <activity android:name=".ListDataActivity" android:exported="true" />
         <activity android:name=".EditDataActivity" android:exported="true" />
+        <activity android:name=".CadastroActivity" android:exported="true" />
 
     </application>
 </manifest>

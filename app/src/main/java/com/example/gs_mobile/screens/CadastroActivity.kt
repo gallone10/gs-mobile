@@ -1,149 +1,179 @@
 package com.example.gs_mobile
 
+import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
-import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 
-class RegisterActivity : ComponentActivity() {
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+class CadastroActivity : ComponentActivity() {
+
+    private val autenticacao by lazy {
+        FirebaseAuth.getInstance()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            RegisterScreen()
+            CadastroScreen { email, password ->
+                cadastrarUsuario(email, password)
+            }
         }
     }
 
-    @Composable
-    fun RegisterScreen() {
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
-        var confirmPassword by remember { mutableStateOf("") }
-        var isRegistering by remember { mutableStateOf(false) }
-
-        fun registerUser() {
-            if (email.isNotEmpty() && password.isNotEmpty() && password == confirmPassword) {
-                isRegistering = true
-                auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this@RegisterActivity) { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(this@RegisterActivity, "Cadastro bem-sucedido!", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(this@RegisterActivity, "Falha no cadastro: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                        }
-                        isRegistering = false
-                    }
-            } else {
-                Toast.makeText(this@RegisterActivity, "Preencha todos os campos corretamente", Toast.LENGTH_SHORT).show()
-            }
+    private fun cadastrarUsuario(email: String, senha: String) {
+        if (!isValidEmail(email)) {
+            AlertDialog.Builder(this)
+                .setTitle("Erro")
+                .setMessage("Por favor, insira um email válido.")
+                .setNegativeButton("OK") { dialog, posicao -> }
+                .create()
+                .show()
+            return
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Título
-            Text(text = "Cadastrar", fontSize = 24.sp, color = Color.White)
+        autenticacao.createUserWithEmailAndPassword(email, senha)
+            .addOnSuccessListener { authResult ->
+                val id = authResult.user?.uid
+                val email = authResult.user?.email
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Campo de E-mail
-            BasicTextField(
-                value = email,
-                onValueChange = { email = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(Color.Gray),
-                singleLine = true,
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
-                decorationBox = { innerTextField ->
-                    Row(modifier = Modifier.padding(8.dp)) {
-                        innerTextField()
+                AlertDialog.Builder(this)
+                    .setTitle("Usuário Criado")
+                    .setMessage("Usuário criado com sucesso!")
+                    .setPositiveButton("OK") { dialog, posicao ->
+                        startActivity(Intent(this, MainActivity::class.java))
                     }
-                }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campo de Senha
-            BasicTextField(
-                value = password,
-                onValueChange = { password = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(Color.Gray),
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
-                decorationBox = { innerTextField ->
-                    Row(modifier = Modifier.padding(8.dp)) {
-                        innerTextField()
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Confirmar Senha
-            BasicTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(Color.Gray),
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
-                decorationBox = { innerTextField ->
-                    Row(modifier = Modifier.padding(8.dp)) {
-                        innerTextField()
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Botão de Cadastro
-            Button(
-                onClick = { registerUser() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
-                enabled = !isRegistering
-            ) {
-                Text(text = if (isRegistering) "Cadastrando..." else "Cadastrar", color = Color.White)
+                    .create()
+                    .show()
             }
+            .addOnFailureListener { exception ->
+                val mensagemErro = exception.message
+
+                AlertDialog.Builder(this)
+                    .setTitle("Erro")
+                    .setMessage("Erro ao criar usuário: $mensagemErro")
+                    .setNegativeButton("OK") { dialog, posicao -> }
+                    .create()
+                    .show()
+            }
+    }
+
+    // Função para validar o formato do email
+    private fun isValidEmail(email: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CadastroScreen(onCadastroClick: (String, String) -> Unit) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.logo), // Substitua pelo ID correto da sua logo
+            contentDescription = "Logo",
+            modifier = Modifier
+                .size(300.dp)  // Tamanho aumentado para 150dp
+                .padding(bottom = 16.dp)
+        )
+
+        Text("Cadastro", fontSize = 24.sp, color = Color.White)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email", color = Color.Gray) },
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFF5F5F5),  // Cor Off White
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Senha", color = Color.Gray) },
+            visualTransformation = PasswordVisualTransformation(),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFF5F5F5),  // Cor Off White
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("Confirme a Senha", color = Color.Gray) },
+            visualTransformation = PasswordVisualTransformation(),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFF5F5F5),  // Cor Off White
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                if (password == confirmPassword) {
+                    onCadastroClick(email, password)
+                } else {
+                    // Exibir mensagem de erro se as senhas não coincidirem
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF003366)), // Azul escuro
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text(text = "Cadastrar", color = Color.White)
         }
     }
 }
