@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.firebase.database.ktx)
 
     // Testes
     testImplementation("junit:junit:4.13.2")
