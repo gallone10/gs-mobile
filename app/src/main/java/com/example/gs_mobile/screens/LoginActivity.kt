@@ -1,6 +1,8 @@
 package com.example.gs_mobile
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -19,26 +21,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.ui.platform.LocalContext
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            LoginScreen(navController = rememberNavController()) // Usando NavController
+            LoginScreen() // Chamando a tela de login
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen() {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -95,17 +96,35 @@ fun LoginScreen(navController: NavController) {
         // Botão de login
         Button(
             onClick = {
-                auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            // Navegar para a tela de inserção de dados
-                            navController.navigate("insert_data")
-                        } else {
-                            println("Erro ao fazer login: ${task.exception?.message}")
+                // Verifica se email e senha não estão vazios
+                if (email.isNotBlank() && password.isNotBlank()) {
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Navegar para InsertDataActivity
+                                val intent = Intent(context, InsertDataActivity::class.java)
+                                context.startActivity(intent)
+                                // Opcional: Finalizar LoginActivity para não voltar à tela de login
+                                (context as? LoginActivity)?.finish()
+                            } else {
+                                // Mostrar mensagem de erro se o login falhar
+                                Toast.makeText(
+                                    context,
+                                    "Erro ao fazer login: ${task.exception?.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
-                    }
+                } else {
+                    // Mostrar mensagem se email ou senha estiverem vazios
+                    Toast.makeText(
+                        context,
+                        "Por favor, preencha email e senha",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF003366)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00A8B5)),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)

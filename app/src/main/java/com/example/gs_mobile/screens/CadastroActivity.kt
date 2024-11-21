@@ -102,7 +102,7 @@ fun CadastroScreen(onCadastroClick: (String, String) -> Unit) {
             painter = painterResource(id = R.drawable.logo), // Substitua pelo ID correto da sua logo
             contentDescription = "Logo",
             modifier = Modifier
-                .size(300.dp)  // Tamanho aumentado para 150dp
+                .size(300.dp)
                 .padding(bottom = 16.dp)
         )
 
@@ -168,7 +168,7 @@ fun CadastroScreen(onCadastroClick: (String, String) -> Unit) {
                     // Exibir mensagem de erro se as senhas não coincidirem
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF003366)), // Azul escuro
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00A8B5)), // Cor alterada
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)

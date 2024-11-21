@@ -13,6 +13,7 @@
         android:theme="@style/Theme.Gsmobile"
         tools:targetApi="31">
 
+        <!-- MainActivity será a tela inicial -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -24,11 +25,32 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".LoginActivity" android:exported="true" />
-        <activity android:name=".InsertDataActivity" android:exported="true" />
-        <activity android:name=".ListDataActivity" android:exported="true" />
-        <activity android:name=".EditDataActivity" android:exported="true" />
-        <activity android:name=".CadastroActivity" android:exported="true" />
+        <!-- Atividades para login, cadastro, inserção, listagem e edição de dados -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:label="Login" />
+
+        <activity
+            android:name=".InsertDataActivity"
+            android:exported="true"
+            android:label="Inserir Dados" />
+
+        <activity
+            android:name=".ListDataActivity"
+            android:exported="true"
+            android:label="Listar Dados" />
+
+        <activity
+            android:name=".EditDataActivity"
+            android:exported="true"
+            android:label="Editar Dados" />
+
+        <activity
+            android:name=".CadastroActivity"
+            android:exported="true"
+            android:label="Cadastro" />
 
     </application>
+
 </manifest>
