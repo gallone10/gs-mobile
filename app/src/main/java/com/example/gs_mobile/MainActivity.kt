@@ -106,6 +106,24 @@ fun MainScreen() {
             ) {
                 Text(text = "Inserir Dados", color = Color.White, style = TextStyle(fontSize = 16.sp))
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Botão de Listagem
+            Button(
+                onClick = {
+                    // Navegar para ListDataActivity
+                    val intent = Intent(context, ListDataActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier
+                    .padding(horizontal = 32.dp, vertical = 8.dp)
+                    .height(45.dp)
+                    .fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00A8B5)) // Cor alterada
+            ) {
+                Text(text = "Ver Listagem", color = Color.White, style = TextStyle(fontSize = 16.sp))
+            }
         }
     }
 }

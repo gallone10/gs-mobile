@@ -1,46 +1,52 @@
 package com.example.gs_mobile
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+data class PlacaSolarLocal(
+    val cpfCnpj: String,
+    val tipoPlaca: String,
+    val capacidadeGeracao: String,
+    val numInstalacoes: String
+)
+
 class InsertDataActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            InsertDataScreen()
+            InsertDataScreen(onNavigateToList = {
+                startActivity(Intent(this, ListDataActivity::class.java))
+                finish() // Opcional: encerra a tela atual
+            })
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InsertDataScreen() {
-    // State variables to hold the input values
+fun InsertDataScreen(onNavigateToList: () -> Unit) {
+    var cpfCnpj by remember { mutableStateOf("") }
     var tipoPlaca by remember { mutableStateOf("") }
     var capacidadeGeracao by remember { mutableStateOf("") }
     var numInstalacoes by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -50,7 +56,6 @@ fun InsertDataScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Logo da empresa
         Image(
             painter = painterResource(id = R.drawable.logo), // Substitua pela sua logo
             contentDescription = "Logo da Empresa",
@@ -59,7 +64,6 @@ fun InsertDataScreen() {
                 .size(200.dp)
         )
 
-        // Título da tela
         Text(
             text = "Cadastro de Placas Solares",
             color = Color.White,
@@ -67,56 +71,93 @@ fun InsertDataScreen() {
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // Campo para inserir o tipo de placa solar
+        TextField(
+            value = cpfCnpj,
+            onValueChange = { cpfCnpj = it },
+            label = { Text("CPF ou CNPJ", color = Color.Black) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White,
+                focusedIndicatorColor = Color(0xFF00A8B5),
+                unfocusedIndicatorColor = Color.Gray
+            )
+        )
+
         TextField(
             value = tipoPlaca,
             onValueChange = { tipoPlaca = it },
-            label = { Text("Tipo da Placa Solar") },
+            label = { Text("Tipo da Placa Solar", color = Color.Black) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color(0xFF333333), // Cor de fundo do campo
-                focusedIndicatorColor = Color(0xFF00A8B5), // Cor do indicador quando o campo está em foco
-                unfocusedIndicatorColor = Color.Gray // Cor do indicador quando o campo não está em foco
+                containerColor = Color.White,
+                focusedIndicatorColor = Color(0xFF00A8B5),
+                unfocusedIndicatorColor = Color.Gray
             )
         )
 
-        // Campo para inserir a capacidade de geração de energia
         TextField(
             value = capacidadeGeracao,
             onValueChange = { capacidadeGeracao = it },
-            label = { Text("Capacidade de Geração (kW)") },
+            label = { Text("Capacidade de Geração (kW)", color = Color.Black) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color(0xFF333333),
+                containerColor = Color.White,
                 focusedIndicatorColor = Color(0xFF00A8B5),
                 unfocusedIndicatorColor = Color.Gray
             )
         )
 
-        // Campo para inserir o número de instalações
         TextField(
             value = numInstalacoes,
             onValueChange = { numInstalacoes = it },
-            label = { Text("Número de Instalações") },
+            label = { Text("Número de Instalações", color = Color.Black) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color(0xFF333333),
+                containerColor = Color.White,
                 focusedIndicatorColor = Color(0xFF00A8B5),
                 unfocusedIndicatorColor = Color.Gray
             )
         )
 
-        // Botão para salvar os dados inseridos
         Button(
             onClick = {
-                // Aqui você pode adicionar a lógica para salvar os dados inseridos
-                // Exemplo: salvarDados(tipoPlaca, capacidadeGeracao, numInstalacoes)
+                // Salvar localmente usando SharedPreferences
+                val sharedPreferences = context.getSharedPreferences("PlacasData", Context.MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+
+                // Recuperar dados existentes
+                val existingDataString = sharedPreferences.getString("placasList", "") ?: ""
+                val existingData = if (existingDataString.isNotEmpty()) {
+                    existingDataString.split(";").map { it.split("|") }.map {
+                        PlacaSolarLocal(it[0], it[1], it[2], it[3])
+                    }.toMutableList()
+                } else {
+                    mutableListOf()
+                }
+
+                // Adicionar novo registro
+                val newPlaca = PlacaSolarLocal(cpfCnpj, tipoPlaca, capacidadeGeracao, numInstalacoes)
+                existingData.add(newPlaca)
+
+                // Converter os dados atualizados de volta para string
+                val updatedDataString = existingData.joinToString(";") {
+                    "${it.cpfCnpj}|${it.tipoPlaca}|${it.capacidadeGeracao}|${it.numInstalacoes}"
+                }
+
+                // Salvar a lista atualizada
+                editor.putString("placasList", updatedDataString)
+                editor.apply()
+
+                // Navegar para a lista
+                onNavigateToList()
             },
             modifier = Modifier
                 .padding(horizontal = 32.dp, vertical = 8.dp)
